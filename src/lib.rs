@@ -79,6 +79,15 @@ impl<T: Clone + Eq + Hash> MappedTree<T> {
             return Some(old_root);
         }
 
+        self.links_by_obj.insert(
+            obj.clone(),
+            Links {
+                parent: None,
+                children: Vec::new(),
+            },
+        );
+        self.size += 1;
+
         None
     }
 
@@ -154,9 +163,63 @@ impl<T: Clone + Eq + Hash> MappedTree<T> {
 mod tests {
     use super::MappedTree;
 
+    fn test_tree() -> MappedTree<i32> {
+        let mut map = MappedTree::new();
+        map.reset_root(&0);
+
+        map.insert(&1, &0);
+        map.insert(&2, &0);
+
+        map.insert(&3, &1);
+        map.insert(&4, &1);
+
+        map.insert(&5, &2);
+        map.insert(&6, &2);
+        map.insert(&7, &2);
+
+        map
+    }
+
     #[test]
     fn size() {
-        let vals = vec![0, 2, 4, 6, 8, 9];
-        let map: MappedTree<i32> = MappedTree::new();
+        let tree = test_tree();
+        assert_eq!(tree.size, 8);
+    }
+
+    #[test]
+    fn parent() {
+        let tree = test_tree();
+        assert_eq!(*tree.parent(&6).unwrap(), 2);
+        assert_eq!(*tree.parent(&2).unwrap(), 0);
+        assert_ne!(*tree.parent(&3).unwrap(), 0);
+    }
+
+    #[test]
+    fn remove() {
+        let mut tree = test_tree();
+        assert!(tree.contains(&6));
+        tree.remove(&6);
+        assert!(!tree.contains(&6));
+    }
+
+    #[test]
+    fn remove_children() {
+        let mut tree = test_tree();
+        
+        tree.remove_children(&2);
+        assert!(!tree.contains(&5));
+        assert!(!tree.contains(&6));
+        assert!(!tree.contains(&7));
+        assert_eq!(tree.children(&2).unwrap().len(), 0);
+    }
+
+    fn contains() {
+        let mut tree = test_tree();
+        
+        assert!(tree.contains(&0));
+        assert!(tree.contains(&1));
+        assert!(tree.contains(&2));
+        assert!(tree.contains(&6));
+        assert!(tree.contains(&7));
     }
 }
