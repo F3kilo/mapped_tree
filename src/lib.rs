@@ -205,17 +205,18 @@ mod tests {
     #[test]
     fn remove_children() {
         let mut tree = test_tree();
-        
+
         tree.remove_children(&2);
         assert!(!tree.contains(&5));
         assert!(!tree.contains(&6));
         assert!(!tree.contains(&7));
         assert_eq!(tree.children(&2).unwrap().len(), 0);
     }
-
+    
+    #[test]
     fn contains() {
-        let mut tree = test_tree();
-        
+        let tree = test_tree();
+
         assert!(tree.contains(&0));
         assert!(tree.contains(&1));
         assert!(tree.contains(&2));
