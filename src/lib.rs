@@ -63,7 +63,7 @@ impl<T: Clone + Eq + Hash> MappedTree<T> {
         None
     }
 
-    pub fn reset_root(&mut self, obj: &T) -> Option<T> {
+    pub fn reset_root(&mut self, obj: T) -> Option<T> {
         if let Some(old_root) = self.root() {
             let children = self.children(&old_root).unwrap().clone();
             for child in &children {
@@ -80,7 +80,7 @@ impl<T: Clone + Eq + Hash> MappedTree<T> {
         }
 
         self.links_by_obj.insert(
-            obj.clone(),
+            obj,
             Links {
                 parent: None,
                 children: Vec::new(),
@@ -91,8 +91,8 @@ impl<T: Clone + Eq + Hash> MappedTree<T> {
         None
     }
 
-    pub fn insert(&mut self, obj: &T, parent: &T) {
-        if self.links_by_obj.contains_key(obj) {
+    pub fn insert(&mut self, obj: T, parent: &T) {
+        if self.links_by_obj.contains_key(&obj) {
             panic!("mapped tree MUST contain UNIQUE elements only");
         }
 
@@ -104,7 +104,7 @@ impl<T: Clone + Eq + Hash> MappedTree<T> {
         parent_links.children.push(obj.clone());
 
         self.links_by_obj.insert(
-            obj.clone(),
+            obj,
             Links {
                 parent: Some(parent.clone()),
                 children: Vec::new(),
@@ -165,17 +165,17 @@ mod tests {
 
     fn test_tree() -> MappedTree<i32> {
         let mut map = MappedTree::new();
-        map.reset_root(&0);
+        map.reset_root(0);
 
-        map.insert(&1, &0);
-        map.insert(&2, &0);
+        map.insert(1, &0);
+        map.insert(2, &0);
 
-        map.insert(&3, &1);
-        map.insert(&4, &1);
+        map.insert(3, &1);
+        map.insert(4, &1);
 
-        map.insert(&5, &2);
-        map.insert(&6, &2);
-        map.insert(&7, &2);
+        map.insert(5, &2);
+        map.insert(6, &2);
+        map.insert(7, &2);
 
         map
     }
@@ -212,7 +212,7 @@ mod tests {
         assert!(!tree.contains(&7));
         assert_eq!(tree.children(&2).unwrap().len(), 0);
     }
-    
+
     #[test]
     fn contains() {
         let tree = test_tree();
