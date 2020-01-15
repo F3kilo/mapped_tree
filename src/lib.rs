@@ -40,15 +40,16 @@ impl<T: Clone + Eq + Hash> MappedTree<T> {
             if let Some(parent) = &links.parent {
                 return Some(parent);
             }
+            return None;
         }
-        None
+        panic!("mapped tree doesn't contain specified object");
     }
 
-    pub fn children(&self, obj: &T) -> Option<&Vec<T>> {
+    pub fn children(&self, obj: &T) -> &Vec<T> {
         if let Some(links) = self.links(obj) {
-            return Some(&links.children);
+            return &links.children;
         }
-        None
+        panic!("mapped tree doesn't contain specified object");
     }
 
     pub fn root(&self) -> Option<T> {
@@ -63,9 +64,13 @@ impl<T: Clone + Eq + Hash> MappedTree<T> {
         None
     }
 
+    pub fn is_leaf(&self, obj: &T) -> bool {
+        self.children(obj).is_empty()
+    }
+
     pub fn reset_root(&mut self, obj: T) -> Option<T> {
         if let Some(old_root) = self.root() {
-            let children = self.children(&old_root).unwrap().clone();
+            let children = self.children(&old_root).clone();
             for child in &children {
                 self.links_by_obj.get_mut(child).unwrap().parent = Some(obj.clone());
             }
@@ -114,18 +119,16 @@ impl<T: Clone + Eq + Hash> MappedTree<T> {
     }
 
     fn remove_children_without_links(&mut self, obj: &T) {
-        if let Some(children) = self.children(obj) {
-            let children = children.clone();
-            for child in &children {
-                self.remove_children(&child);
-            }
-
-            let children_count = children.len();
-            for child in &children {
-                self.links_by_obj.remove(&child);
-            }
-            self.size -= children_count;
+        let children = self.children(obj).clone();
+        for child in &children {
+            self.remove_children(&child);
         }
+
+        let children_count = children.len();
+        for child in &children {
+            self.links_by_obj.remove(&child);
+        }
+        self.size -= children_count;
     }
 
     pub fn remove_children(&mut self, obj: &T) {
@@ -210,7 +213,7 @@ mod tests {
         assert!(!tree.contains(&5));
         assert!(!tree.contains(&6));
         assert!(!tree.contains(&7));
-        assert_eq!(tree.children(&2).unwrap().len(), 0);
+        assert_eq!(tree.children(&2).len(), 0);
     }
 
     #[test]
